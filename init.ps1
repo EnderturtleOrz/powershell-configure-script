@@ -3,7 +3,7 @@
 # Usage: Run this script in PowerShell to install and configure modules and append content to $PROFILE.
 
 # If you cannot run this script, you may need to change the execution policy.
-# Run command in PowerShell as an administrator: Set-ExecutionPolicy RemoteSigned
+# Run command in PowerShell as an administrator: Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 function Append-ContentToProfile {
     param (

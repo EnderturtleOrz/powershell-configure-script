@@ -4,32 +4,46 @@
 
 此仓库包含一个 PowerShell 脚本，用于安装和配置各种模块，并将内容追加到您的 PowerShell 配置文件中。
 
+## 功能
+
+- 安装和配置 PowerShell 模块
+- 将自定义内容追加到您的 PowerShell 配置文件
+- 易于自定义和扩展
+
 ## 如何使用
 
-1. 克隆此仓库到您的本地机器。
-2. 以管理员身份打开 PowerShell。
-3. 运行 `init.ps1` 脚本：
+1. 克隆此仓库到您的本地机器：
+    ```sh
+    git clone https://github.com/EnderturtleOrz/powershell-configure-script.git
+    cd powershell-configure-script
+    ```
 
-```powershell
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-.\init.ps1
-```
+2. 以管理员身份更改脚本策略：
+    ```sh
+    Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+    ```
 
-4. 按提示选择所需的配置模式。
+3. 运行脚本：
+    ```sh
+    ./init.ps1
+    ```
 
-## 配置模式
+4. 按屏幕上的说明安装和配置模块。
 
-- **Yes (Y)**: 安装并配置所有模块，并将所有内容追加到 `$PROFILE`。
-- **Customize (C)**: 选择性安装和配置或更新选定的模块。
-- **No (N)**: 退出脚本。
+## 要求
+
+- PowerShell 5.1 或更高版本
+- 管理员权限以更改执行策略
+
+## 许可证
+
+此项目根据 MIT 许可证授权 - 有关详细信息，请参阅 [LICENSE](LICENSE) 文件。
 
 ## 如何贡献？
 
 配置和其他模块？请参阅 [config/README.md](config/README.md)。
 
-初始化脚本？直接 PR!!
-
-欢迎提交问题和 PR!!!
+欢迎贡献！请打开一个 issue 或提交一个 pull request。
 
 ## Star History
 

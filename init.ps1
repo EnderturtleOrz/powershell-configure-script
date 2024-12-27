@@ -26,10 +26,10 @@ Write-Host "Welcome to the PowerShell configuration script!"
 Write-Host "This script will install and configure modules and append content to your PowerShell profile."
 Write-Host "You can always run this script again to update or customize your configuration."
 Write-Host "To enable all features, please install Nerd Fonts https://www.nerdfonts.com/font-downloads."
-Write-Host "If you want to change the startup configuration including themes, you can manually $PROFILE."
+Write-Host "If you want to change the startup configuration including themes, you can manually edit `$PROFILE."
 Write-Host ""
 
-$initialMode = Read-Host "Select initial mode: (Y)es for install and configure all, (C)ustomize, (N)o for exit"
+$initialMode = Read-Host "Select initial mode: (Y)es for install and configure all, (C)ustomize, (R)est `$PROFILE, (N)o for exit"
 $configFiles = Get-ChildItem -Path "./config" -Filter "*.ps1"
 
 switch ($initialMode.ToUpper()) {
@@ -46,6 +46,14 @@ switch ($initialMode.ToUpper()) {
                 }
             }
             Append-ContentToProfile -filePath $file.FullName
+        }
+    }
+    "R" {
+        # Reset $PROFILE
+        $reset = Read-Host "Do you want to clean `$PROFILE? (Y/N)"
+        if ($reset.ToUpper() -eq "Y") {
+            Clear-Content -Path $PROFILE
+            Write-Host "`$PROFILE is reset."
         }
     }
     "C" {

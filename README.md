@@ -4,6 +4,8 @@
 
 This repository contains a PowerShell script to install and configure various modules and append content to your PowerShell profile.
 
+![](pic.png)
+
 ## Features
 
 - Install and configure PowerShell modules
@@ -36,6 +38,14 @@ This repository contains a PowerShell script to install and configure various mo
 - PowerShell 5.1 or later
 - Administrator privileges to change the execution policy
 
+## Module List
+
+See [config/README.md](config/README.md).
+
+## FAQ
+
+1. **Fonts not displaying correctly?**
+   - The `oh-my-posh` module requires Nerd Fonts to enable all features. You can download Nerd Fonts from [Nerd Fonts](https://www.nerdfonts.com/font-downloads).
 
 ## License
 

@@ -4,6 +4,8 @@
 
 此仓库包含一个 PowerShell 脚本，用于安装和配置各种模块，并将内容追加到您的 PowerShell 配置文件中。
 
+![](pic.png)
+
 ## 功能
 
 - 安装和配置 PowerShell 模块
@@ -34,6 +36,15 @@
 
 - PowerShell 5.1 或更高版本
 - 管理员权限以更改执行策略
+
+## 模组列表
+
+请参阅 [config/README.md](config/README.md)。
+
+## FAQ
+
+1. **字体显示不正确？**
+   - `oh-my-posh` 模块需要 Nerd Fonts 才能启用所有功能。您可以从 [Nerd Fonts](https://www.nerdfonts.com/font-downloads) 下载 Nerd Fonts。
 
 ## 许可证
 

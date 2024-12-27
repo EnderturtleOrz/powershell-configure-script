@@ -9,6 +9,8 @@ function Append-ContentToProfile {
     param (
         [string]$filePath
     )
+    $comment = "# $(Split-Path -Leaf $filePath)"
+    Add-Content -Path $PROFILE -Value $comment
     Get-Content -Path $filePath | Add-Content -Path $PROFILE
 }
 
@@ -76,13 +78,14 @@ switch ($initialMode.ToUpper()) {
                         Write-Host "$fileName is installing and configuring..."
                         $lines = Get-Content -Path $file.FullName
                         foreach ($line in $lines) {
-                            if ($line -match "^# install") {
-                                $installCommand = $line -replace "^# install\s*", ""
+                            if ($line -match "^# install: ") {
+                                $installCommand = $line -replace "^# install: \s*", ""
                                 $moduleName = $installCommand -split " " | Select-Object -First 1
                                 Install-ModuleIfSelected -moduleName $moduleName -installCommand $installCommand
                             }
                         }
                         Append-ContentToProfile -filePath $file.FullName
+                        Write-Host "$fileName is installed and configured."
                     } else {
                         Write-Host "File $fileName not found."
                     }
@@ -112,12 +115,13 @@ switch ($initialMode.ToUpper()) {
                         Write-Host "$fileName is updating..."
                         $lines = Get-Content -Path $file.FullName
                         foreach ($line in $lines) {
-                            if ($line -match "^# install") {
-                                $installCommand = $line -replace "^# install\s*", ""
+                            if ($line -match "^# install: ") {
+                                $installCommand = $line -replace "^# install: \s*", ""
                                 $moduleName = $installCommand -split " " | Select-Object -First 1
                                 Install-ModuleIfSelected -moduleName $moduleName -installCommand $installCommand
                             }
                         }
+                        Write-Host "$fileName is updated."
                     } else {
                         Write-Host "File $fileName not found."
                     }

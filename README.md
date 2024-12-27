@@ -25,7 +25,7 @@ This repository contains a PowerShell script to install and configure various mo
     Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
     ```
 
-3. Run the script:
+3. Run the script as an administrator:
     ```sh
     ./init.ps1
     ```

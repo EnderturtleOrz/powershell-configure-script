@@ -1,5 +1,4 @@
-# install: Install-Module -Name PowerShellGet -Force -Scope CurrentUser -AllowClobber 
-# install: Install-Module PSReadLine -Force
+# install: Install-Module PSReadLine -AllowPrerelease -Force
 Import-Module PSReadLine
 Import-Module posh-git
 

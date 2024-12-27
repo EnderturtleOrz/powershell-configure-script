@@ -5,6 +5,17 @@
 # If you cannot run this script, you may need to change the execution policy.
 # Run command in PowerShell as an administrator: Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
+# Function to check if the script is running with administrator privileges
+function Test-Administrator {
+    $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    return $currentUser.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+if (-not (Test-Administrator)) {
+    Write-Host "This script needs to be run as an administrator. Please restart PowerShell with administrator privileges and run the script again."
+    exit
+}
+
 function Append-ContentToProfile {
     param (
         [string]$filePath
@@ -22,6 +33,18 @@ function Install-ModuleIfSelected {
     Invoke-Expression $installCommand
 }
 
+function Check-PowerShellGet {
+    $powerShellGetModule = Get-Module -Name PowerShellGet -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1
+    if ($null -eq $powerShellGetModule -or -not $powerShellGetModule.Version.ToString().StartsWith("2")) {
+        Install-Module -Name PowerShellGet -Force
+        Write-Host "PowerShellGet module installed. Please restart your terminal and run the script again."
+        exit
+    } else {
+        Write-Host "PowerShellGet version $($powerShellGetModule.Version) is installed."
+    }
+}
+
+# Description
 Write-Host "Welcome to the PowerShell configuration script!"
 Write-Host "This script will install and configure modules and append content to your PowerShell profile."
 Write-Host "You can always run this script again to update or customize your configuration."
@@ -35,6 +58,7 @@ $configFiles = Get-ChildItem -Path "./config" -Filter "*.ps1"
 switch ($initialMode.ToUpper()) {
     "Y" {
         # Install all modules and append all content to $PROFILE
+        Check-PowerShellGet
         foreach ($file in $configFiles) {
             Write-Host "$file is installing and configuring..."
             $lines = Get-Content -Path $file.FullName
@@ -59,6 +83,7 @@ switch ($initialMode.ToUpper()) {
     "C" {
         # Custom settings
         Write-Host ""
+        Check-PowerShellGet
         $customMode = Read-Host "Select custom mode: (S)elective install and configure, (U)pdate selected modules, (N)o for exit"
 
         switch ($customMode.ToUpper()) {
@@ -101,6 +126,7 @@ switch ($initialMode.ToUpper()) {
             }
             "U" {
                 # Update selected modules
+                Check-PowerShellGet
                 try {
                     $fileNames = $configFiles | ForEach-Object { $_.Name }
                     $selectedFiles = $fileNames | fzf --multi --prompt "Select files to install: " --header "Use TAB to select multiple files"

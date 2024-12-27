@@ -25,7 +25,7 @@
     Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
     ```
 
-3. 运行脚本：
+3. 以管理员身份运行脚本：
     ```sh
     ./init.ps1
     ```

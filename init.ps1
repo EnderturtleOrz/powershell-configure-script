@@ -11,7 +11,7 @@ function Test-Administrator {
     return $currentUser.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-if (-not (Test-Administrator)) {
+    if (-not (Test-Administrator)) {
     Write-Host "This script needs to be run as an administrator. Please restart PowerShell with administrator privileges and run the script again."
     exit
 }
@@ -23,6 +23,7 @@ function Append-ContentToProfile {
     $comment = "# $(Split-Path -Leaf $filePath)"
     Add-Content -Path $PROFILE -Value $comment
     Get-Content -Path $filePath | Add-Content -Path $PROFILE
+    Write-Host "Appended content from $filePath to `$PROFILE."
 }
 
 function Install-ModuleIfSelected {
@@ -31,6 +32,7 @@ function Install-ModuleIfSelected {
         [string]$installCommand
     )
     Invoke-Expression $installCommand
+    Write-Host "$moduleName installed successfully."
 }
 
 function Check-PowerShellGet {
@@ -44,7 +46,50 @@ function Check-PowerShellGet {
     }
 }
 
-# Description
+function Select-Files {
+    param (
+        [array]$configFiles
+    )
+    $selectedFilesArray = @()
+    try {
+        $fileNames = $configFiles | ForEach-Object { $_.Name }
+        $selectedFiles = $fileNames | fzf --multi --prompt "Select files to process: " --header "Use TAB to select multiple files"
+        $selectedFilesArray = $selectedFiles -split "`n"
+    } catch {
+        Write-Host "fzf not found, falling back to manual selection"
+        foreach ($file in $configFiles) {
+            $fileName = $file.Name
+            $install = Read-Host "Do you want to process $fileName? (Y/N)"
+            if ($install.ToUpper() -eq "Y") {
+                $selectedFilesArray += $fileName
+            }
+        }
+    }
+    return $selectedFilesArray
+}
+
+function Install-SelectedFiles {
+    param (
+        [array]$selectedFilesArray,
+        [array]$configFiles,
+        [bool]$appendToProfile
+    )
+    foreach ($fileName in $selectedFilesArray) {
+        $file = $configFiles | Where-Object { $_.Name -eq $fileName }
+        Write-Host "$fileName is installing..."
+        $lines = Get-Content -Path $file.FullName
+        foreach ($line in $lines) {
+            if ($line -match "^# install: ") {
+                $installCommand = $line -replace "^# install: \s*", ""
+                Install-ModuleIfSelected -moduleName $fileName -installCommand $installCommand
+            }
+        }
+        if ($appendToProfile) {
+            Append-ContentToProfile -filePath $file.FullName
+        }
+    }
+}
+
 Write-Host "Welcome to the PowerShell configuration script!"
 Write-Host "This script will install and configure modules and append content to your PowerShell profile."
 Write-Host "You can always run this script again to update or customize your configuration."
@@ -59,18 +104,8 @@ switch ($initialMode.ToUpper()) {
     "Y" {
         # Install all modules and append all content to $PROFILE
         Check-PowerShellGet
-        foreach ($file in $configFiles) {
-            Write-Host "$file is installing and configuring..."
-            $lines = Get-Content -Path $file.FullName
-            foreach ($line in $lines) {
-                if ($line -match "^# install: ") {
-                    $installCommand = $line -replace "^# install: \s*", ""
-                    $moduleName = $installCommand -split " " | Select-Object -First 1
-                    Install-ModuleIfSelected -moduleName $moduleName -installCommand $installCommand
-                }
-            }
-            Append-ContentToProfile -filePath $file.FullName
-        }
+        $selectedFilesArray = $configFiles | ForEach-Object { $_.Name }
+        Install-SelectedFiles -selectedFilesArray $selectedFilesArray -configFiles $configFiles -appendToProfile $true
     }
     "R" {
         # Reset $PROFILE
@@ -89,80 +124,16 @@ switch ($initialMode.ToUpper()) {
         switch ($customMode.ToUpper()) {
             "S" {
                 # Selective install and configure
-                try {
-                    $fileNames = $configFiles | ForEach-Object { $_.Name }
-                    $selectedFiles = $fileNames | fzf --multi --prompt "Select files to install: " --header "Use TAB to select multiple files"
-                    $selectedFilesArray = $selectedFiles -split "`n"
-                } catch {
-                    Write-Host "fzf not found, falling back to manual selection"
-                    $selectedFilesArray = @()
-                    foreach ($file in $configFiles) {
-                        $fileName = $file.Name
-                        $install = Read-Host "Do you want to install and configure ${fileName}? (Y/N)"
-                        if ($install.ToUpper() -eq "Y") {
-                            $selectedFilesArray += $fileName
-                        }
-                    }
-                }
-                foreach ($fileName in $selectedFilesArray) {
-                    $fileName = $fileName.Trim()
-                    $file = $configFiles | Where-Object { $_.Name -eq $fileName }
-                    if ($file) {
-                        Write-Host "$fileName is installing and configuring..."
-                        $lines = Get-Content -Path $file.FullName
-                        foreach ($line in $lines) {
-                            if ($line -match "^# install: ") {
-                                $installCommand = $line -replace "^# install: \s*", ""
-                                $moduleName = $installCommand -split " " | Select-Object -First 1
-                                Install-ModuleIfSelected -moduleName $moduleName -installCommand $installCommand
-                            }
-                        }
-                        Append-ContentToProfile -filePath $file.FullName
-                        Write-Host "$fileName is installed and configured."
-                    } else {
-                        Write-Host "File $fileName not found."
-                    }
-                }
+                $selectedFilesArray = Select-Files -configFiles $configFiles
+                Install-SelectedFiles -selectedFilesArray $selectedFilesArray -configFiles $configFiles -appendToProfile $true
             }
             "U" {
                 # Update selected modules
-                Check-PowerShellGet
-                try {
-                    $fileNames = $configFiles | ForEach-Object { $_.Name }
-                    $selectedFiles = $fileNames | fzf --multi --prompt "Select files to install: " --header "Use TAB to select multiple files"
-                    $selectedFilesArray = $selectedFiles -split "`n"
-                } catch {
-                    Write-Host "fzf not found, falling back to manual selection"
-                    foreach ($file in $configFiles) {
-                        $fileName = $file.Name
-                        $install = Read-Host "Do you want to update ${fileName}? (Y/N)"
-                        if ($install.ToUpper() -eq "Y") {
-                            $selectedFilesArray += $fileName
-                        }
-                    }
-                }
-
-                foreach ($fileName in $selectedFilesArray) {
-                    $fileName = $fileName.Trim()
-                    $file = $configFiles | Where-Object { $_.Name -eq $fileName }
-                    if ($file) {
-                        Write-Host "$fileName is updating..."
-                        $lines = Get-Content -Path $file.FullName
-                        foreach ($line in $lines) {
-                            if ($line -match "^# install: ") {
-                                $installCommand = $line -replace "^# install: \s*", ""
-                                $moduleName = $installCommand -split " " | Select-Object -First 1
-                                Install-ModuleIfSelected -moduleName $moduleName -installCommand $installCommand
-                            }
-                        }
-                        Write-Host "$fileName is updated."
-                    } else {
-                        Write-Host "File $fileName not found."
-                    }
-                }
+                $selectedFilesArray = Select-Files -configFiles $configFiles
+                Install-SelectedFiles -selectedFilesArray $selectedFilesArray -configFiles $configFiles -appendToProfile $false
             }
             "N" {
-                Write-Host "Exiting."
+                Write-Host "Exiting custom mode."
             }
             default {
                 Write-Host "Invalid selection. Please run the script again and select a valid mode."

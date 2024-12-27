@@ -1,6 +1,5 @@
 # install: Install-Module PSReadLine -AllowPrerelease -Force
 Import-Module PSReadLine
-Import-Module posh-git
 
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 Set-PSReadlineKeyHandler -Key UpArrow -Function HistorySearchBackward
